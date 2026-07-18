@@ -1,0 +1,25 @@
+{
+  "name": "xadrez-satelite-online",
+  "version": "1.0.0",
+  "description": "Modulo satelite para partidas de xadrez online humano vs humano",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "chess",
+    "socketio",
+    "nodejs",
+    "multiplayer"
+  ],
+  "author": "Silvio",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xadrez Tabuleiro Neutro</title>
+  <link rel="icon" href="data:,">
+  
+  <!-- Link para o arquivo CSS externo -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Carregar uma versão estável de chess.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+  <script>
+    // Verificar se Chess foi carregado corretamente
+    if (typeof Chess === "undefined") {
+      console.error("Erro: A biblioteca chess.js não foi carregada corretamente.");
+      document.body.innerHTML = "<h1>Erro: Não foi possível carregar a biblioteca de xadrez. Verifique sua conexão ou tente recarregar a página.</h1>";
+    } else {
+      // Definir Chess globalmente
+      window.Chess = Chess;
+      // Inicializar o jogo somente após Chess estar disponível
+      window.jogo = new Chess();
+    }
+  </script>
+  <!-- Carregar os outros scripts somente após Chess e jogo estarem definidos -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module" src="script.js"></script>
+</head>
+<body>
+
+  <h2 id="main-title" style="text-align: center;">XADREZ TABULEIRO NEUTRO</h2>
+
+<div class="grupo-botoes">
+    <div class="config-container">
+      <!-- Forçamos a exibição direta dos campos de texto na bancada -->
+<div id="config-humano-humano" style="display: inline-flex; align-items: center; gap: 15px; width: 100%;">
+        <label style="white-space: nowrap;">Seu Nome:
+          <input type="text" id="nome-jogador1" placeholder="Seu nome" style="width: 120px; padding: 4px;">
+        </label>
+        <label style="white-space: nowrap;">Sala:
+          <input type="text" id="codigo-sala" placeholder="Ex: 123" style="width: 80px; padding: 4px;">
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="grupo-botoes top-controls-container">
+    <button id="btn-iniciar">🎲 Conectar e Iniciar</button>
+    <button id="btn-confirmar">✅ Jogue</button> <!-- Botão Confirmar -->
+    <button id="btn-voltar">◀</button>
+    <button id="btn-avancar">▶</button>
+    <button id="btn-retomar">✔️ Retomar</button>
+    <button id="btn-manual">📘 Instruções</button>
+  </div>
+
+  <div id="estado-jogo">Insira seu nome e o código da sala para conectar.</div>
+
+  <div id="mouse-coord"></div>
+
+  <div id="tabuleiro" class="board-container"></div>
+  
+  <div id="capturas">
+    Brancas capturaram: <br>
+    Pretas capturaram:
+  </div>
+
+<div id="info"></div>
+  <div id="temp-message-area"></div>
+
+  <!-- Bloco de Instruções Higienizado para Jogo Online -->
+ <!-- Bloco de Instruções Higienizado para Jogo Online -->
+  <div id="manual" style="display: none;">
+    <h2>Como Jogar com um Amigo à Distância</h2>
+    <p>Para jogar, você e seu oponente precisam combinar um <strong>Código de Sala</strong>. É como escolher a mesma mesa em um clube de xadrez.</p>
+    
+    <h3 style="margin-top: 15px;">Passo a Passo Simples:</h3>
+    <ol style="padding-left: 20px; line-height: 1.6;">
+      <li><strong>Combine com seu amigo:</strong> Escolha uma palavra ou número simples (por exemplo: <code>1234</code> ou <code>xadrez</code>) e mande para ele por mensagem.</li>
+      <li><strong>Preencha os campos acima:</strong> 
+        <br>• No campo <strong>Seu Nome</strong>, digite como você quer ser chamado.
+        <br>• No campo <strong>Sala de Jogo</strong>, digite exatamente o código que vocês combinaram.
+      </li>
+      <li><strong>Ligue o Tabuleiro:</strong> Clique no botão 🎲 <strong>Conectar e Iniciar</strong>. Peça para o seu amigo fazer o mesmo no computador dele, usando o mesmo código de sala.</li>
+      <li><strong>Movimentando as peças:</strong> Clique primeiro na peça que deseja mover e depois na casa para onde ela deve ir.</li>
+      <li><strong>Transmitindo a jogada:</strong> Quando tiver certeza do seu lance, clique no botão verde ✅ <strong>Jogue</strong>. A peça se moverá sozinha na tela do seu amigo, em tempo real!</li>
+    </ol>
+
+    <hr style="border: 0; border-top: 1px solid #ccc; margin: 15px 0;">
+    <p style="font-size: 0.9em;">💡 <em>Dica: Você pode usar os botões ◀ e ▶ para rever os lances ocorridos na partida, e o botão <strong>Retomar</strong> para voltar a jogar a partir daquela posição.</em></p>
+    <p><strong>Dúvidas ou Comentários? (Telegram: 't.me/SilvioAurich')</strong></p>
+    
+    <button onclick="voltarAoJogo()" style="margin-top: 10px; padding: 6px 12px; cursor: pointer;">⬅️ Voltar ao Jogo</button>
+  </div>
+
+  <!-- Bloco de Gerenciamento de Treinos Removido / Desativado neste módulo -->
+</body>
+
+<!-- Mantendo o seu ChatBot Flutuante Ativo no Circuito -->
+<script 
+ async 
+ src="https://app.gptmaker.ai/widget/3E0F14D02CF331C2D17D0EF466D45D59/float.js">
+</script>
+        
+</html>
