@@ -17,11 +17,15 @@ const io = new Server(server, {
 });
 
 // Serve os arquivos estáticos de dentro da sua pasta 'public'
-app.use(express.static(path.join(__dirname, 'public')));
+//app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.resolve(__dirname, 'public')));
 
 // Rota principal: entrega o jogo.html que está dentro de 'public'
+//app.get('/', (req, res) => {
+//    res.sendFile(path.join(__dirname, 'public', 'jogo.html'));
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'jogo.html'));
+    res.sendFile(path.resolve(__dirname, 'public', 'jogo.html'));
+});
 });
 
 // Gerenciador de conexões do barramento Socket.io (Central Telefônica)
