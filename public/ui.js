@@ -781,25 +781,23 @@ function enviarMensagemAusencia() {
  * Lida com o início do jogo, lendo as configurações da UI.
  */
 function handleStartGame() {
-    const modoJogoEl = document.getElementById("modo-jogo");
-    const corEl = document.getElementById("cor");
-    const profundidadeEl = document.getElementById("profundidade");
-    const nomeJogador1El = document.getElementById("nome-jogador1");
-    const nomeJogador2El = document.getElementById("nome-jogador2");
-
-    const modo = modoJogoEl.value;
-    const cor = corEl.value;
-    const nome1 = nomeJogador1El.value;
-    const nome2 = nomeJogador2El.value;
+    // Definindo os valores fixos diretamente, já que não há caixas de seleção no HTML
+    const modo = "humano"; 
+    const cor = "w"; 
+    const profundidade = 1;
     
-// Configura o Stockfish com base na profundidade/tempo escolhida na UI
+    // Configurando os nomes dos jogadores usando as variáveis corretas do seu sistema
+    const nome1 = "Jogador 1";
+    const nome2 = "Jogador 2";
+    
+    // Configura o Stockfish com base na profundidade/tempo escolhida na UI
+    const profundidadeEl = document.getElementById("profundidade");
     if (profundidadeEl) {
         const nivelEscolhido = profundidadeEl.value;
         if (nivelEscolhido) {
             setCurrentLevel(nivelEscolhido);
         }
     }
-
 
     if (modo === "humano-humano") {
         if (!nome1 || !nome2) {
@@ -872,7 +870,7 @@ function bindUIEvents() {
     //    treinosBtn.addEventListener('click', mostrarGerenciarTreinos);
     //} else {
      //   console.error("DEBUG: Botão #botao-problema-mate NÃO ENCONTRADO no DOM.");
-    }
+   // }
     
     // LIGAÇÃO DO NOVO BOTÃO DE CONFIRMAÇÃO
     const btnConfirmar = document.getElementById("btn-confirmar");
@@ -904,32 +902,10 @@ function bindUIEvents() {
     const salvarPosicaoBtn = gerenciarTreinosEl ? gerenciarTreinosEl.querySelector("button:nth-of-type(1)") : null;
     if (salvarPosicaoBtn) salvarPosicaoBtn.addEventListener('click', salvarPosicaoAtual);
 
-// }
+ }
 
 // Garante que os eventos sejam ligados após o DOM ser carregado
 document.addEventListener('DOMContentLoaded', bindUIEvents);
-
-// ========================================================
-// EXPORTAÇÕES DE MÓDULO (Refatorado para bloco único)
-// ========================================================
-export {
-    criarTabuleiro,
-    getCasaSelecionada,
-    setCasaSelecionada,
-    updateCapturesDisplay,
-    mostrarCor,
-    mostrarMensagemTemporaria,
-    atualizarAvaliacao,
-    mostrarEmojiAvaliacao,
-    verificarXeque,
-    mostrarManual,
-    mostrarGerenciarTreinos,
-    voltarAoJogo,
-    atualizarInfo,
-    atualizarEstadoJogo,
-    mostrarSugestoes, // AGORA EXPORTADO CORRETAMENTE NO BLOCO FINAL
-    bindUIEvents
-};
 
 function carregarEstadoDeJogo(fen) {
     console.log("DEBUG: Carregando nova posição FEN...", fen);
@@ -966,3 +942,26 @@ if (typeof window !== 'undefined') {
     window.carregarEstadoDeJogo = carregarEstadoDeJogo;
     window.getJogoInstance = getJogoInstance; 
 }
+
+// ========================================================
+// EXPORTAÇÕES DE MÓDULO (Bloco Único e Final Absoluto)
+// ========================================================
+export { 
+    criarTabuleiro, 
+    getCasaSelecionada, 
+    setCasaSelecionada, 
+    updateCapturesDisplay, 
+    mostrarCor, 
+    mostrarMensagemTemporaria, 
+    atualizarAvaliacao, 
+    mostrarEmojiAvaliacao, 
+    verificarXeque, 
+    mostrarManual, 
+    mostrarGerenciarTreinos, 
+    voltarAoJogo, 
+    atualizarInfo, 
+    atualizarEstadoJogo, 
+    mostrarSugestoes, 
+    bindUIEvents,
+    carregarEstadoDeJogo
+};
