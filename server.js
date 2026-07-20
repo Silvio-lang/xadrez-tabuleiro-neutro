@@ -4,9 +4,29 @@ const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
 
+const fs = require('fs');
+
 // Inicialização do aplicativo Express e do servidor HTTP
 const app = express();
 const server = http.createServer(app);
+
+// Adicione este bloco antes de configurar o servidor
+console.log("--- DEBUG DE ESTRUTURA DE ARQUIVOS ---");
+console.log("Diretório atual (__dirname):", __dirname);
+try {
+    const files = fs.readdirSync(__dirname);
+    console.log("Conteúdo da raiz:", files);
+    
+    const publicPath = path.join(__dirname, 'public');
+    if (fs.existsSync(publicPath)) {
+        console.log("Conteúdo da pasta public:", fs.readdirSync(publicPath));
+    } else {
+        console.log("ERRO: Pasta 'public' não encontrada em:", publicPath);
+    }
+} catch (err) {
+    console.log("Erro ao listar diretórios:", err.message);
+}
+console.log("---------------------------------------");
 
 // Configuração do Socket.io permitindo conexões de qualquer origem (CORS)
 const io = new Server(server, {
@@ -23,9 +43,9 @@ app.use(express.static(path.resolve(__dirname, 'public')));
 // Rota principal: entrega o jogo.html que está dentro de 'public'
 //app.get('/', (req, res) => {
 //    res.sendFile(path.join(__dirname, 'public', 'jogo.html'));
+console.log("DEBUG: Tentando servir arquivo de:", path.resolve(__dirname, 'public', 'jogo.html'));
 app.get('/', (req, res) => {
     res.sendFile(path.resolve(__dirname, 'public', 'jogo.html'));
-});
 });
 
 // Gerenciador de conexões do barramento Socket.io (Central Telefônica)
