@@ -1,6 +1,6 @@
 // Ponto de entrada (maestro) do Módulo Satélite Humano vs Humano Online
 import { bindUIEvents, mostrarMensagemTemporaria } from './ui.js';
-import { iniciarNovoJogo } from './game-state.js';
+import { iniciarNovoJogo, getGameState } from './game-state.js';
 
 // Inicializa a conexão com o servidor central Socket.io
 const socket = io(); 
@@ -12,8 +12,11 @@ let minhaCor = null;
  * Controla a inicialização da partida online por pareamento automático.
  */
 function iniciarPartidaOnline() {
-    console.log("Iniciando conexão da partida...");
+    console.log("Iniciando conexão da partida com o servidor...");
     mostrarMensagemTemporaria("Procurando oponente...", 2000);
+    
+    // DISPARO CRÍTICO: Avisa o servidor central que este jogador quer entrar na fila
+    socket.emit('solicitarPareamento');
 }
 
 // Ouve o aviso do servidor quando um oponente é encontrado e a partida começa
@@ -21,25 +24,44 @@ socket.on('inicioPartida', (dados) => {
     console.log("Partida iniciada! Cor recebida do servidor:", dados.cor);
     minhaCor = dados.cor; // 'w' para Brancas ou 'b' para Pretas
 
-    mostrarMensagemTemporaria(dados.mensagem, 2000);
+    mostrarMensagemTemporaria(dados.mensagem, 3000);
 
-    // Inicializa a partida passando EXATAMENTE a cor que o servidor determinou para este jogador
+    // Inicializa a partida passando a cor exata definida pelo servidor
     iniciarNovoJogo("humano-humano", minhaCor, "Você", "Oponente");
 });
 
-// Ouve as jogadas feitas pelo oponente na rede
+// Ouve as jogadas feitas pelo oponente na rede e atualiza o tabuleiro local
 socket.on('jogadaOponente', (dados) => {
     console.log("Jogada recebida do oponente:", dados);
-    // Aqui o tabuleiro local atualiza com a jogada do adversário sem travar o turno
-    import('./game-state.js').then(({ moverPeca }) => {
-        moverPeca(dados.origem, dados.destino, dados.promocao || 'q');
+    import('./game-state.js').then(({ getJogoInstance, criarTabuleiro, atualizarInfo, atualizarEstadoJogo, atualizarAvaliacao }) => {
+        const jogo = getJogoInstance();
+        
+        // Aplica o movimento do oponente diretamente na instância do Chess.js
+        const jogadaValida = jogo.move({ from: dados.origem, to: dados.destino, promotion: dados.promocao || 'q' });
+        
+        if (jogadaValida) {
+            // Atualiza a interface gráfica do tabuleiro
+            import('./ui.js').then(({ criarTabuleiro, atualizarInfo, atualizarEstadoJogo, atualizarAvaliacao }) => {
+                criarTabuleiro();
+                atualizarInfo();
+                atualizarEstadoJogo();
+                atualizarAvaliacao();
+            });
+        }
     });
 });
 
 // Ouve o aviso do servidor se o oponente desconectar
 socket.on('oponenteDesconectou', (dados) => {
-    mostrarMensagemTemporaria(dados.mensagem, 2000);
+    mostrarMensagemTemporaria(dados.mensagem, 3000);
 });
+
+// Função utilitária global para transmitir a nossa jogada ao servidor
+export function enviarJogadaRede(origem, destino, promocao = 'q') {
+    if (socket) {
+        socket.emit('fazerJogada', { origem, destino, promocao });
+    }
+}
 
 /**
  * Liga os eventos de configuração específicos do início do jogo online
