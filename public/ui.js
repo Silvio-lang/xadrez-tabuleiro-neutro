@@ -947,7 +947,7 @@ if (typeof window !== 'undefined') {
 // EXPORTAÇÕES DE MÓDULO (Bloco Único e Final Absoluto)
 // ========================================================
 export { 
-    criarTabuleiro, 
+    criarTabuleiro,
     getCasaSelecionada, 
     setCasaSelecionada, 
     updateCapturesDisplay, 

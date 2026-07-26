@@ -49,36 +49,61 @@ app.get('/', (req, res) => {
 });
 
 // Gerenciador de conexões do barramento Socket.io (Central Telefônica)
+let jogadorEsperando = null;
+
 io.on('connection', (socket) => {
-    let salaAtual = null;
-    let nomeUsuario = null;
+    console.log('Novo jogador conectado:', socket.id);
 
-    console.log(`Dispositivo conectado: ${socket.id}`);
-
-    // Acoplamento: Organiza os jogadores em suas respectivas salas exclusivas
-    socket.on('entrar-sala', (dados) => {
-        salaAtual = dados.sala;
-        nomeUsuario = dados.nome;
-
-        socket.join(salaAtual);
-        console.log(`[Rede] ${nomeUsuario} sintonizou na sala: ${salaAtual}`);
-
-        // Avisa apenas a sala específica que o oponente chegou
-        socket.to(salaAtual).emit('jogador-conectado', { nome: nomeUsuario });
+// REPETIDOR DE JOGADAS ONLINE (Ponte Jogador 1 -> Jogador 2)
+    socket.on('jogadaOponente', (dados) => {
+        console.log("DEBUG [2 - Servidor Central]: Jogada recebida no servidor!", dados);
+        // Retransmite a jogada para o outro jogador na sala
+        socket.broadcast.emit('jogadaOponente', dados);
     });
 
-    // Transmissão: Envia a jogada confirmada apenas para o oponente na mesma sala
-    socket.on('enviar-jogada', (dados) => {
-        if (salaAtual) {
-            socket.to(salaAtual).emit('receber-jogada', dados);
+// Sistema de Pareamento Automático
+    if (!jogadorEsperando) {
+        // Primeiro jogador a chegar fica na espera
+        jogadorEsperando = socket;
+        socket.cor = 'w'; // Brancas
+        socket.emit('statusPareamento', { mensagem: 'Aguardando um oponente entrar...', cor: 'w' });
+    } else {
+        // Segundo jogador chegou: fecha o par e cria a sala
+        const salaId = `sala_${jogadorEsperando.id}_${socket.id}`;
+        const jogador1 = jogadorEsperando;
+        const jogador2 = socket;
+
+        jogadorEsperando = null; // Limpa a fila
+
+        jogador2.cor = 'b'; // Pretas
+
+        // Coloca ambos na mesma sala do Socket.io
+        jogador1.join(salaId);
+        jogador2.join(salaId);
+
+        jogador1.sala = salaId;
+        jogador2.sala = salaId;
+
+        // Avisa os dois que o jogo começou
+        jogador1.emit('inicioPartida', { cor: 'w', sala: salaId, mensagem: 'Oponente conectado! Você joga com as Brancas.' });
+        jogador2.emit('inicioPartida', { cor: 'b', sala: salaId, mensagem: 'Oponente conectado! Você joga com as Pretas.' });
+    }
+
+    // Recebe a jogada de um jogador e envia para o oponente na mesma sala
+    socket.on('jogadaOponente', (dadosJogada) => {
+        console.log(`DEBUG [2 - Servidor Central]: Jogada retransmitida na sala [${socket.sala}]:`, dadosJogada);
+        if (socket.sala) {
+            socket.to(socket.sala).emit('jogadaOponente', dadosJogada);
         }
     });
 
-    // Gerencia a desconexão do usuário isolando seu circuito
+    // Tratamento de desconexão
     socket.on('disconnect', () => {
-        console.log(`Dispositivo desconectado: ${socket.id}`);
-        if (salaAtual && nomeUsuario) {
-            socket.to(salaAtual).emit('jogador-desconectado', { nome: nomeUsuario });
+        console.log('Jogador desconectou:', socket.id);
+        if (jogadorEsperando === socket) {
+            jogadorEsperando = null;
+        } else if (socket.sala) {
+            socket.to(socket.sala).emit('oponenteDesconectou', { mensagem: 'O seu oponente se desconectou.' });
         }
     });
 });

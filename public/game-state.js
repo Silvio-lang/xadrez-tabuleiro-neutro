@@ -94,14 +94,18 @@ export function iniciarNovoJogo(modo, cor, nome1, nome2) {
 /**
  * Attempts to move a piece from a source square to a target square.
  */
+/**
+ * Attempts to move a piece from a source square to a target square.
+ */
 export function moverPeca(source, target, promotion = 'q') {
     
     const jogo = getJogoInstance();
     let gameState = getGameState();
 
-    // Validação
-    if (!gameState.partidaIniciada || jogo.game_over() || (gameState.modoJogo === "humano-ia" && jogo.turn() !== gameState.corUsuario)) {
-        console.log("moverPeca(): Movimento não permitido neste momento.");
+    // TRAVA DE SEGURANÇA REDE/LOCAL: 
+    // Impede mover se o jogo não iniciou, acabou, ou se a peça/turno não pertence ao usuário ativo
+    if (!gameState.partidaIniciada || jogo.game_over() || jogo.turn() !== gameState.corUsuario) {
+        console.log("moverPeca(): Movimento não permitido. Não é seu turno ou suas peças.");
         setCasaSelecionada(null); 
         criarTabuleiro(); 
         return;
@@ -142,30 +146,36 @@ export function moverPeca(source, target, promotion = 'q') {
         });
         gameState.indiceAtual = gameState.historicoJogadas.length; 
 
-        // Atualiza UI
+// Atualiza UI
         criarTabuleiro(); 
         atualizarInfo();
         atualizarEstadoJogo(); 
-        atualizarAvaliacao();
 
-        // 5. Lógica Pós-Movimento
+// DISPARO DE REDE (ONLINE): Envia o lance para o oponente via Socket
+        const socketAtivo = typeof socket !== 'undefined' ? socket : (typeof window !== 'undefined' ? window.socket : null);
+        
+        if (socketAtivo) {
+            console.log("DEBUG [1 - Cliente Emissor]: Enviando jogada via Socket...", jogada);
+            socketAtivo.emit('jogadaOponente', {
+                from: jogada.from,
+                to: jogada.to,
+                promotion: jogada.promotion
+            });
+        } else {
+            console.log("DEBUG [1 - Alerta]: Objeto socket não encontrado no game-state!");
+        }
+
+        // Lógica Pós-Movimento
         if (jogo.game_over()) {
             gameState.partidaIniciada = false;
             setGameState(gameState);
             atualizarEstadoJogo(); 
-
-            if (jogo.in_checkmate()) {
-                const vencedor = gameState.modoJogo === 'humano-ia' ? "Você" : (jogo.turn() === 'w' ? gameState.nomeJogador2 : gameState.nomeJogador1);
-                // NOTA: Removido o alert
-            } else if (jogo.in_draw()) {
-                // NOTA: Removido o alert
-            }
-
         } else {
-            // Se o jogo não acabou
             atualizarInfo();
-            avaliarJogadaAtual(); 
-            // O controle passa para o UI.js que vai exibir o botão de confirmação.
+            // CHAVE DE SEGURANÇA: Só avalia com Stockfish se o jogo for contra a IA
+            if (gameState.modoJogo === "humano-ia" && typeof avaliarJogadaAtual === 'function') {
+                avaliarJogadaAtual(); 
+            }
         }
 
     } else {
